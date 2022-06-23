@@ -24,8 +24,7 @@ public class StaffSchedulingApplication {
 			Arrays.stream(roles).forEach(roleName -> {
 				Role role = roleRepository.findByRole(roleName);
 				if (role == null) {
-					Role newRole = new  Role();
-					newRole.setRole(roleName);
+					Role newRole = new  Role(roleName);
 					roleRepository.save(newRole);
 				}
 			});

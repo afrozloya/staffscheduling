@@ -1,10 +1,11 @@
 package com.invygo.staffscheduling.controller;
 
-import com.invygo.staffscheduling.Service.CustomUserDetailsService;
-import com.invygo.staffscheduling.configs.JwtTokenProvider;
 import com.invygo.staffscheduling.dto.LoginDTO;
 import com.invygo.staffscheduling.dto.RegisterDTO;
+import com.invygo.staffscheduling.jwt.JwtUtil;
+import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
+import com.invygo.staffscheduling.repository.RoleRepository;
 import com.invygo.staffscheduling.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 @RequiredArgsConstructor
@@ -26,16 +30,25 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AuthenticationManager authenticationManager;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-    private CustomUserDetailsService userService;
+    private final RoleRepository roleRepository;
+
+    private final PasswordEncoder bCryptPasswordEncoder;
 
     @PostMapping("/login")
     public ResponseEntity login(@RequestBody @Valid LoginDTO data) {
         try {
             String username = data.getEmail();
-            authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(username, data.getPassword()));
-            String token = jwtTokenProvider.createToken(username, this.userRepository.findByEmail(username).getRoles());
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            username, data.getPassword())
+            );
+            User user = this.userRepository.findByEmail(username).orElse(null);
+            if(user==null){
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+            }
+            String token = jwtUtil.createToken(user);
             Map<Object, Object> model = new HashMap<>();
             model.put("username", username);
             model.put("token", token);
@@ -47,14 +60,28 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid RegisterDTO user) {
-        User userExists = userService.findUserByEmail(user.getEmail());
+        User userExists = userRepository.findByEmail(user.getEmail()).orElse(null);
         if (userExists != null) {
             throw new BadCredentialsException("User with username: " + user.getEmail() + " already exists");
         }
-        userService.saveUser(user);
+        User newUser = createUser(user);
+        userRepository.save(newUser);
         Map<Object, Object> model = new HashMap<>();
         model.put("message", "User registered successfully");
         return ResponseEntity.ok(model);
+    }
+
+    private User createUser(RegisterDTO user) {
+        User newUser = new User();
+        newUser.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        newUser.setEnabled(true);
+        HashSet<Role> roles = new HashSet<>();
+        user.getRoles().forEach(role -> {
+            Role userRole = roleRepository.findByRole(role);
+            roles.add(userRole);
+        });
+        newUser.setRoles(new HashSet<>(roles));
+        return newUser;
     }
 
 }

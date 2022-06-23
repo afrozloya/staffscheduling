@@ -15,4 +15,8 @@ public class Role {
     private String id;
     @Indexed(unique = true, direction = IndexDirection.DESCENDING)
     private String role;
+
+    public Role(String role) {
+        this.role = role;
+    }
 }
