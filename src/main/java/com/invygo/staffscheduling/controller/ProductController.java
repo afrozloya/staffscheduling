@@ -3,12 +3,17 @@ package com.invygo.staffscheduling.controller;
 import com.invygo.staffscheduling.models.Product;
 import com.invygo.staffscheduling.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.security.RolesAllowed;
 import java.util.Optional;
 
 @RestController
@@ -16,24 +21,26 @@ public class ProductController {
     @Autowired
     ProductRepository productRepository;
 
-    @RequestMapping(method= RequestMethod.GET, value="/api/products")
+    @GetMapping("/api/products")
+    @RolesAllowed("ADMIN")
     public Iterable<Product> product() {
         return productRepository.findAll();
     }
 
-    @RequestMapping(method=RequestMethod.POST, value="/api/products")
+    @PostMapping(value="/api/products")
     public String save(@RequestBody Product product) {
         productRepository.save(product);
 
         return product.getId();
     }
 
-    @RequestMapping(method=RequestMethod.GET, value="/api/products/{id}")
+    @RolesAllowed("USER")
+    @GetMapping("/api/products/{id}")
     public Optional<Product> show(@PathVariable String id) {
         return productRepository.findById(id);
     }
 
-    @RequestMapping(method=RequestMethod.PUT, value="/api/products/{id}")
+    @PutMapping("/api/products/{id}")
     public Product update(@PathVariable String id, @RequestBody Product product) {
         Optional<Product> prod = productRepository.findById(id);
         if(product.getProdName() != null)
@@ -48,7 +55,7 @@ public class ProductController {
         return prod.get();
     }
 
-    @RequestMapping(method=RequestMethod.DELETE, value="/api/products/{id}")
+    @DeleteMapping("/api/products/{id}")
     public String delete(@PathVariable String id) {
         Optional<Product> product = productRepository.findById(id);
         productRepository.delete(product.get());

@@ -20,7 +20,7 @@ public class StaffSchedulingApplication {
 	CommandLineRunner init(RoleRepository roleRepository) {
 		return args -> {
 			//afroz go flyway
-			String[] roles = {"ADMIN", "USER"};
+			String[] roles = {"ROLE_ADMIN", "ROLE_USER"};
 			Arrays.stream(roles).forEach(roleName -> {
 				Role role = roleRepository.findByRole(roleName);
 				if (role == null) {

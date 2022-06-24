@@ -1,5 +1,6 @@
 package com.invygo.staffscheduling.jwt;
 
+import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
@@ -12,6 +13,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.stream.Collectors;
+
 @Component
 public class JwtUtil {
     private static final Logger LOGGER = LoggerFactory.getLogger(JwtUtil.class); //afroz
@@ -23,10 +26,12 @@ public class JwtUtil {
     private String SECRET_KEY;
 
     public String createToken(User user) {
+        System.out.println(user.getRoles().stream().map(Role::getRole).collect(Collectors.toList()).toString());
         return Jwts.builder()
                 .setSubject(String.format("%s,%s", user.getId(), user.getEmail()))
                 .setIssuer("staffscheduling")
-                .claim("roles", user.getRoles().toString())
+                .claim("roles",
+                        user.getRoles().stream().map(Role::getRole).collect(Collectors.toList()).toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRE_DURATION*1000))
                 .signWith(SignatureAlgorithm.HS512, SECRET_KEY)
