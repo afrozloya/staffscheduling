@@ -45,7 +45,7 @@ public class AuthController {
                             username, data.getPassword())
             );
             User user = this.userRepository.findByEmail(username).orElse(null);
-            if(user==null){
+            if (user == null) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
             String token = jwtUtil.createToken(user);

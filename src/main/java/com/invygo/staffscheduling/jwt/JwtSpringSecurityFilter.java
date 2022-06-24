@@ -84,19 +84,16 @@ public class JwtSpringSecurityFilter extends OncePerRequestFilter {
         Claims claims = jwtUtil.parseClaims(token);
         String subject = (String) claims.get(Claims.SUBJECT);
         String[] jwtSubject = subject.split(",");
-        userDetails =  userRepository.findByEmail(jwtSubject[1]).orElse(new User());
-//        String roles = (String) claims.get("roles");
-//        roles = roles.replace("[", "").replace("]", "");
-//        String[] roleNames = roles.split(",");
-//        Set<Role> roleSet = new HashSet<>();
-//        for (String aRoleName : roleNames) {
-//            roleSet.add(roleRepository.findByRole(aRoleName.trim()));
-//        }
-//        userDetails.setRoles(roleSet);
-//        userDetails.setId(jwtSubject[0]);
-//        userDetails.setEmail(jwtSubject[1]);
+        String roles = (String) claims.get("roles");
+        roles = roles.replace("[", "").replace("]", "");
+        String[] roleNames = roles.split(",");
+        Set<Role> roleSet = new HashSet<>();
+        for (String aRoleName : roleNames) {
+            roleSet.add(roleRepository.findByRole(aRoleName.trim()));
+        }
+        userDetails.setRoles(roleSet);
+        userDetails.setId(jwtSubject[0]);
+        userDetails.setEmail(jwtSubject[1]);
         return userDetails;
     }
-
-
 }
