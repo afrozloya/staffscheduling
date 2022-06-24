@@ -1,8 +1,8 @@
 package com.invygo.staffscheduling.controller;
 
 import com.invygo.staffscheduling.dto.LoginDTO;
-import com.invygo.staffscheduling.dto.RegisterDTO;
 import com.invygo.staffscheduling.jwt.JwtUtil;
+import com.invygo.staffscheduling.misc.ScheduleConstants;
 import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.RoleRepository;
@@ -59,7 +59,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity register(@RequestBody @Valid RegisterDTO user) {
+    public ResponseEntity register(@RequestBody @Valid LoginDTO user) {
         User userExists = userRepository.findByEmail(user.getEmail()).orElse(null);
         if (userExists != null) {
             throw new BadCredentialsException("User with username: " + user.getEmail() + " already exists");
@@ -71,17 +71,15 @@ public class AuthController {
         return ResponseEntity.ok(model);
     }
 
-    private User createUser(RegisterDTO user) {
+    private User createUser(LoginDTO user) {
         User newUser = new User();
+        newUser.setEmail(user.getEmail());
         newUser.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         newUser.setEnabled(true);
         HashSet<Role> roles = new HashSet<>();
-        user.getRoles().forEach(role -> {
-            Role userRole = roleRepository.findByRole(role);
-            roles.add(userRole);
-        });
+        Role userRole = roleRepository.findByRole(ScheduleConstants.USER);
+        roles.add(userRole);
         newUser.setRoles(new HashSet<>(roles));
         return newUser;
     }
-
 }

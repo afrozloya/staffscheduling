@@ -1,5 +1,6 @@
 package com.invygo.staffscheduling;
 
+import com.invygo.staffscheduling.misc.ScheduleConstants;
 import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.repository.RoleRepository;
 import org.springframework.boot.CommandLineRunner;
@@ -20,7 +21,7 @@ public class StaffSchedulingApplication {
 	CommandLineRunner init(RoleRepository roleRepository) {
 		return args -> {
 			//afroz go flyway
-			String[] roles = {"ROLE_ADMIN", "ROLE_USER"};
+			String[] roles = ScheduleConstants.ROLES;
 			Arrays.stream(roles).forEach(roleName -> {
 				Role role = roleRepository.findByRole(roleName);
 				if (role == null) {

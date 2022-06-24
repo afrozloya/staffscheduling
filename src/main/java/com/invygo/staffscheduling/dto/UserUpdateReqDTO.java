@@ -7,6 +7,8 @@ import java.util.Set;
 
 @Getter
 @Setter
-public class RegisterDTO extends LoginDTO{
+public class UserUpdateReqDTO {
+    private String password;
+    private String fullName;
     private Set<String> roles;
 }
