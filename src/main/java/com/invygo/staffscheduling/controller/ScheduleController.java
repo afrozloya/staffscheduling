@@ -1,6 +1,8 @@
 package com.invygo.staffscheduling.controller;
 
+import com.invygo.staffscheduling.dto.DateRangeDTO;
 import com.invygo.staffscheduling.dto.ScheduleDTO;
+import com.invygo.staffscheduling.dto.TotalShiftLength;
 import com.invygo.staffscheduling.models.Schedule;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.ScheduleRepository;
@@ -75,11 +77,17 @@ public class ScheduleController {
         return "schedule deleted";
     }
 
-    @GetMapping(value = "/api/schedules/my")
+    @PostMapping("/api/schedules/my")
     @RolesAllowed({"ADMIN", "USER"})
-    public Iterable<Schedule> mySchedules() {
+    public Iterable<Schedule> mySchedules(@RequestBody DateRangeDTO dateRangeDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return scheduleRepository.findAllByUser((User) auth.getPrincipal());
+        User user = (User) auth.getPrincipal();
+        if(dateRangeDTO.getStartDate() != null && dateRangeDTO.getEndDate() != null){
+            return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
+                    dateRangeDTO.getEndDate());
+        } else {
+            return scheduleRepository.findAllByUser(user);
+        }
     }
 
     @GetMapping(value = "/api/schedules/user/{id}")
@@ -89,5 +97,11 @@ public class ScheduleController {
         return scheduleRepository.findAllByUser(user);
     }
 
+    @GetMapping(value = "/api/schedules/summary")
+    @RolesAllowed("ADMIN")
+    public Iterable<TotalShiftLength> getTotalShiftByUser() {
+        Iterable<TotalShiftLength> totalShiftLengths = scheduleRepository.getTotalShiftLengthByUser();
+        return totalShiftLengths;
+    }
 
 }
