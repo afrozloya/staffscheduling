@@ -2,7 +2,8 @@ package com.invygo.staffscheduling.controller;
 
 import com.invygo.staffscheduling.dto.DateRangeDTO;
 import com.invygo.staffscheduling.dto.ScheduleDTO;
-import com.invygo.staffscheduling.dto.TotalShiftLength;
+import com.invygo.staffscheduling.dto.TotalShiftLengthReqDTO;
+import com.invygo.staffscheduling.dto.TotalShiftLengthRespDTO;
 import com.invygo.staffscheduling.models.Schedule;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.ScheduleRepository;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.Date;
 import java.util.Optional;
 
 @RestController
@@ -82,25 +84,25 @@ public class ScheduleController {
     public Iterable<Schedule> mySchedules(@RequestBody DateRangeDTO dateRangeDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) auth.getPrincipal();
-        if(dateRangeDTO.getStartDate() != null && dateRangeDTO.getEndDate() != null){
-            return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
+        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
                     dateRangeDTO.getEndDate());
-        } else {
-            return scheduleRepository.findAllByUser(user);
-        }
     }
 
-    @GetMapping(value = "/api/schedules/user/{id}")
+    @PostMapping(value = "/api/schedules/user/{id}")
     @RolesAllowed({"ADMIN", "USER"})
-    public Iterable<Schedule> userSchedules(@PathVariable String id) {
+    public Iterable<Schedule> userSchedules(@PathVariable String id, @RequestBody DateRangeDTO dateRangeDTO) {
         User user = userRepository.findById(id).orElse(null);
-        return scheduleRepository.findAllByUser(user);
+        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
+                dateRangeDTO.getEndDate());
     }
 
-    @GetMapping(value = "/api/schedules/summary")
+    @PostMapping(value = "/api/schedules/summary")
     @RolesAllowed("ADMIN")
-    public Iterable<TotalShiftLength> getTotalShiftByUser() {
-        Iterable<TotalShiftLength> totalShiftLengths = scheduleRepository.getTotalShiftLengthByUser();
+    public Iterable<TotalShiftLengthRespDTO> getTotalShiftByUser(@RequestBody TotalShiftLengthReqDTO reqDTO) {
+        Date startDate = reqDTO.getDateRange() != null ? reqDTO.getDateRange().getStartDate() : null;
+        Date endDate = reqDTO.getDateRange() != null ? reqDTO.getDateRange().getEndDate() : null;
+        Iterable<TotalShiftLengthRespDTO> totalShiftLengths = scheduleRepository.getTotalShiftLengthByUser(
+                reqDTO.isDescending(), startDate, endDate);
         return totalShiftLengths;
     }
 

@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TotalShiftLength {
+public class TotalShiftLengthRespDTO {
     private User user;
     private int totalShiftLength;
 }
