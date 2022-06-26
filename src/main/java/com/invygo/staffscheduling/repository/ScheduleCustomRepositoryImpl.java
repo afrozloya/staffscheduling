@@ -36,7 +36,7 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
                 .last("user").as("user")
                 .sum("shiftLength").as("totalShiftLength");
         ProjectionOperation projectionOperation = Aggregation.project("user", "totalShiftLength");
-        Sort.Direction sortDir = isDescending ?  Sort.Direction.DESC : Sort.Direction.ASC;
+        Sort.Direction sortDir = isDescending ? Sort.Direction.DESC : Sort.Direction.ASC;
         SortOperation sortOperation = Aggregation.sort(sortDir, "totalShiftLength");
         return mongoTemplate.aggregate(Aggregation.newAggregation(
                 matchOperation,
@@ -51,9 +51,8 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
         Query query = new Query();
         query.addCriteria(Criteria.where("user").is(user));
         Criteria workDateCriteria = workDateCriteria = getWorkCriteria(dateRangeDTO);
-        if(workDateCriteria!=null)
-            query.addCriteria(workDateCriteria);
-        Iterable<Schedule> schedules = mongoTemplate.find(query,Schedule.class);
+        query.addCriteria(workDateCriteria);
+        Iterable<Schedule> schedules = mongoTemplate.find(query, Schedule.class);
         return schedules;
     }
 
@@ -64,18 +63,14 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
 
         LocalDate today = LocalDate.now();
         LocalDate lastYear = today.minusYears(1);
-        if(startDate ==null || lastYear.isAfter(convertToLocalDate(startDate))){
+        if (startDate == null || lastYear.isAfter(convertToLocalDate(startDate))) { //due to this cork criteria can never be null
             startDate = convertToUtilDate(lastYear);
         }
-
-        if(startDate != null || endDate != null){
-            workDateCriteria = Criteria.where("workDate");
-            if(startDate !=null)
-                workDateCriteria = workDateCriteria.gte(startDate);
-            if(endDate !=null)
-                workDateCriteria = workDateCriteria.lte(endDate);
-        }
-
+        workDateCriteria = Criteria.where("workDate");
+        if (startDate != null)
+            workDateCriteria = workDateCriteria.gte(startDate);
+        if (endDate != null)
+            workDateCriteria = workDateCriteria.lte(endDate);
         return workDateCriteria;
     }
 
@@ -83,6 +78,7 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
         return LocalDate.ofInstant(
                 dateToConvert.toInstant(), ZoneId.systemDefault());
     }
+
     public Date convertToUtilDate(LocalDate dateToConvert) {
         return Date.from(dateToConvert.atStartOfDay()
                 .atZone(ZoneId.systemDefault())
