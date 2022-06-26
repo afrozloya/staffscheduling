@@ -2,6 +2,7 @@ package com.invygo.staffscheduling.jwt;
 
 import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
+import com.invygo.staffscheduling.repository.RoleRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -9,10 +10,14 @@ import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -24,6 +29,9 @@ public class JwtUtil {
 
     @Value("${security.jwt.token.secret-key:secret}")
     private String SECRET_KEY;
+
+    @Autowired
+    RoleRepository roleRepository;
 
     public String createToken(User user) {
         return Jwts.builder()
@@ -55,6 +63,24 @@ public class JwtUtil {
                 .setSigningKey(SECRET_KEY)
                 .parseClaimsJws(token)
                 .getBody();
+    }
+
+    public UserDetails getUserDetails(String token) {
+        User userDetails = new User();
+        Claims claims = parseClaims(token);
+        String subject = (String) claims.get(Claims.SUBJECT);
+        String[] jwtSubject = subject.split(",");
+        String roles = (String) claims.get("roles");
+        roles = roles.replace("[", "").replace("]", "");
+        String[] roleNames = roles.split(",");
+        Set<Role> roleSet = new HashSet<>();
+        for (String aRoleName : roleNames) {
+            roleSet.add(roleRepository.findByRole(aRoleName.trim()));
+        }
+        userDetails.setRoles(roleSet);
+        userDetails.setId(jwtSubject[0]);
+        userDetails.setEmail(jwtSubject[1]);
+        return userDetails;
     }
 
 }

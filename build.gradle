@@ -42,3 +42,18 @@ jacoco {
 }
 
 test.finalizedBy(project.tasks.jacocoTestReport)
+
+jacocoTestReport {
+	dependsOn test
+	afterEvaluate {
+		classDirectories.setFrom(files(classDirectories.files.collect {
+			fileTree(dir: it, exclude: [
+					"com/invygo/staffscheduling/configs/**",
+					"com/invygo/staffscheduling/models/**",
+					"com/invygo/staffscheduling/dto/**",
+					"**/JwtSpringSecurityFilter.*",
+					"**/PrePopulateData.*"
+			])
+		}))
+	}
+}

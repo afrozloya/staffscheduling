@@ -40,10 +40,6 @@ class AuthControllerTest {
     @Mock
     PasswordEncoder bCryptPasswordEncoder;
 
-    @Rule
-    public final ExpectedException exception = ExpectedException.none();
-
-
     @Test
     void testLoginSuccess() {
         LoginDTO loginDTO = new LoginDTO();
