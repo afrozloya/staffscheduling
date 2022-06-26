@@ -5,7 +5,11 @@ import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.RoleRepository;
 import com.invygo.staffscheduling.repository.UserRepository;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,7 +20,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.security.RolesAllowed;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -28,23 +34,29 @@ public class UserController {
     private final RoleRepository roleRepository;
 
     private final PasswordEncoder bCryptPasswordEncoder;
+    @ApiOperation(value = "Get all users", notes = "Returns list of users")
     @GetMapping("/users")
     public Iterable<User> users() {
         return userRepository.findAll();
     }
 
+    @ApiOperation(value = "Get user by id", notes = "Returns one user based on id provided")
     @GetMapping("/users/{id}")
     public Optional<User> show(@PathVariable String id) {
         return userRepository.findById(id);
     }
 
+    @ApiOperation(value = "Delete user by id", notes = "Deletes one user based on id provided")
     @DeleteMapping("/users/{id}")
-    public String delete(@PathVariable String id) {
+    public ResponseEntity delete(@PathVariable String id) {
         Optional<User> user = userRepository.findById(id);
         userRepository.delete(user.get());
-        return "user deleted";
+        Map<Object, Object> model = new HashMap<>();
+        model.put("message", "User deleted successfully");
+        return ResponseEntity.ok(model);
     }
 
+    @ApiOperation(value = "Update user by id", notes = "Returns updated user information")
     @PutMapping("/users/{id}")
     public User update(@PathVariable String id, @RequestBody UserUpdateReqDTO updateReqDTO) {
         User user = userRepository.findById(id).orElse(null);

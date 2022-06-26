@@ -26,7 +26,6 @@ public class JwtUtil {
     private String SECRET_KEY;
 
     public String createToken(User user) {
-        System.out.println(user.getRoles().stream().map(Role::getRole).collect(Collectors.toList()).toString());
         return Jwts.builder()
                 .setSubject(String.format("%s,%s", user.getId(), user.getEmail()))
                 .setIssuer("staffscheduling")

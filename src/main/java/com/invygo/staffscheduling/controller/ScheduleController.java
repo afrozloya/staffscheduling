@@ -8,6 +8,7 @@ import com.invygo.staffscheduling.models.Schedule;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.ScheduleRepository;
 import com.invygo.staffscheduling.repository.UserRepository;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,12 +32,14 @@ public class ScheduleController {
     @Autowired
     UserRepository userRepository;
 
+    @ApiOperation(value = "Get all schedules", notes = "Returns list of schedules")
     @GetMapping("/api/schedules")
     @RolesAllowed({"ADMIN", "USER"})
     public Iterable<Schedule> schedule() {
         return scheduleRepository.findAll();
     }
 
+    @ApiOperation(value = "Add a new schedule based on given info", notes = "Returns newly added schedule id")
     @PostMapping(value = "/api/schedules")
     @RolesAllowed("ADMIN")
     public String save(@RequestBody ScheduleDTO scheduleDTO) {
@@ -48,12 +51,14 @@ public class ScheduleController {
         return schedule.getId();
     }
 
+    @ApiOperation(value = "Get schedule by id", notes = "Returns one schedule based on id provided")
     @RolesAllowed({"ADMIN", "USER"})
     @GetMapping("/api/schedules/{id}")
     public Optional<Schedule> show(@PathVariable String id) {
         return scheduleRepository.findById(id);
     }
 
+    @ApiOperation(value = "Update schedule by id", notes = "Returns updated schedule information")
     @RolesAllowed("ADMIN")
     @PutMapping("/api/schedules/{id}")
     public Schedule update(@PathVariable String id, @RequestBody ScheduleDTO scheduleUpd) {
@@ -70,6 +75,8 @@ public class ScheduleController {
         return schedule;
     }
 
+    @ApiOperation(value = "Delete schedule by id", notes = "Deletes one schedule based on id provided")
+
     @RolesAllowed("ADMIN")
     @DeleteMapping("/api/schedules/{id}")
     public String delete(@PathVariable String id) {
@@ -79,6 +86,8 @@ public class ScheduleController {
         return "schedule deleted";
     }
 
+
+    @ApiOperation(value = "Get my schedules", notes = "Returns list of schedules for logged in user")
     @PostMapping("/api/schedules/my")
     @RolesAllowed({"ADMIN", "USER"})
     public Iterable<Schedule> mySchedules(@RequestBody DateRangeDTO dateRangeDTO) {
@@ -88,6 +97,7 @@ public class ScheduleController {
                     dateRangeDTO.getEndDate());
     }
 
+    @ApiOperation(value = "Get one user schedules", notes = "Returns list of schedules for given user")
     @PostMapping(value = "/api/schedules/user/{id}")
     @RolesAllowed({"ADMIN", "USER"})
     public Iterable<Schedule> userSchedules(@PathVariable String id, @RequestBody DateRangeDTO dateRangeDTO) {
@@ -96,6 +106,8 @@ public class ScheduleController {
                 dateRangeDTO.getEndDate());
     }
 
+    @ApiOperation(value = "Get total shift length per user",
+            notes = "Returns list of sum of shift length for given date range")
     @PostMapping(value = "/api/schedules/summary")
     @RolesAllowed("ADMIN")
     public Iterable<TotalShiftLengthRespDTO> getTotalShiftByUser(@RequestBody TotalShiftLengthReqDTO reqDTO) {

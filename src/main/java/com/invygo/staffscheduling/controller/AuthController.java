@@ -7,6 +7,9 @@ import com.invygo.staffscheduling.models.Role;
 import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.RoleRepository;
 import com.invygo.staffscheduling.repository.UserRepository;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,8 +39,13 @@ public class AuthController {
 
     private final PasswordEncoder bCryptPasswordEncoder;
 
+    @ApiOperation(value = "Login using credentials", notes = "Returns username and JWT token")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Successfully retrieved"),
+            @ApiResponse(code = 401, message = "Unauthorized - The user credentials incorrect")
+    })
     @PostMapping("/login")
-    public ResponseEntity login(@RequestBody @Valid LoginDTO data) {
+    public ResponseEntity login( @Valid @RequestBody LoginDTO data) {
         try {
             String username = data.getEmail();
             Authentication authentication = authenticationManager.authenticate(
@@ -58,6 +66,11 @@ public class AuthController {
         }
     }
 
+    @ApiOperation(value = "Signup using credentials", notes = "Returns a successful message")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "User registered successfully"),
+            @ApiResponse(code = 401, message = "Unauthorized - The user already exits")
+    })
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody @Valid LoginDTO user) {
         User userExists = userRepository.findByEmail(user.getEmail()).orElse(null);
