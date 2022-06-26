@@ -35,7 +35,7 @@ public class ScheduleController {
     @ApiOperation(value = "Get all schedules", notes = "Returns list of schedules")
     @GetMapping("/api/schedules")
     @RolesAllowed({"ADMIN", "USER"})
-    public Iterable<Schedule> schedule() {
+    public Iterable<Schedule> findAllSchedules() {
         return scheduleRepository.findAll();
     }
 
@@ -54,7 +54,7 @@ public class ScheduleController {
     @ApiOperation(value = "Get schedule by id", notes = "Returns one schedule based on id provided")
     @RolesAllowed({"ADMIN", "USER"})
     @GetMapping("/api/schedules/{id}")
-    public Optional<Schedule> show(@PathVariable String id) {
+    public Optional<Schedule> findScheduleById(@PathVariable String id) {
         return scheduleRepository.findById(id);
     }
 
@@ -93,8 +93,7 @@ public class ScheduleController {
     public Iterable<Schedule> mySchedules(@RequestBody DateRangeDTO dateRangeDTO) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         User user = (User) auth.getPrincipal();
-        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
-                    dateRangeDTO.getEndDate());
+        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO);
     }
 
     @ApiOperation(value = "Get one user schedules", notes = "Returns list of schedules for given user")
@@ -102,8 +101,7 @@ public class ScheduleController {
     @RolesAllowed({"ADMIN", "USER"})
     public Iterable<Schedule> userSchedules(@PathVariable String id, @RequestBody DateRangeDTO dateRangeDTO) {
         User user = userRepository.findById(id).orElse(null);
-        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO.getStartDate(),
-                dateRangeDTO.getEndDate());
+        return scheduleRepository.findAllByUserForDateRange(user, dateRangeDTO);
     }
 
     @ApiOperation(value = "Get total shift length per user",
@@ -111,10 +109,8 @@ public class ScheduleController {
     @PostMapping(value = "/api/schedules/summary")
     @RolesAllowed("ADMIN")
     public Iterable<TotalShiftLengthRespDTO> getTotalShiftByUser(@RequestBody TotalShiftLengthReqDTO reqDTO) {
-        Date startDate = reqDTO.getDateRange() != null ? reqDTO.getDateRange().getStartDate() : null;
-        Date endDate = reqDTO.getDateRange() != null ? reqDTO.getDateRange().getEndDate() : null;
         Iterable<TotalShiftLengthRespDTO> totalShiftLengths = scheduleRepository.getTotalShiftLengthByUser(
-                reqDTO.isDescending(), startDate, endDate);
+                reqDTO.isDescending(), reqDTO.getDateRange());
         return totalShiftLengths;
     }
 

@@ -6,8 +6,6 @@ import com.invygo.staffscheduling.models.User;
 import com.invygo.staffscheduling.repository.RoleRepository;
 import com.invygo.staffscheduling.repository.UserRepository;
 import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiResponse;
-import io.swagger.annotations.ApiResponses;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,13 +34,13 @@ public class UserController {
     private final PasswordEncoder bCryptPasswordEncoder;
     @ApiOperation(value = "Get all users", notes = "Returns list of users")
     @GetMapping("/users")
-    public Iterable<User> users() {
+    public Iterable<User> findAllUsers() {
         return userRepository.findAll();
     }
 
     @ApiOperation(value = "Get user by id", notes = "Returns one user based on id provided")
     @GetMapping("/users/{id}")
-    public Optional<User> show(@PathVariable String id) {
+    public Optional<User> findUserById(@PathVariable String id) {
         return userRepository.findById(id);
     }
 

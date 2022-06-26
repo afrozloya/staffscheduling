@@ -45,25 +45,21 @@ public class AuthController {
             @ApiResponse(code = 401, message = "Unauthorized - The user credentials incorrect")
     })
     @PostMapping("/login")
-    public ResponseEntity login( @Valid @RequestBody LoginDTO data) {
-        try {
-            String username = data.getEmail();
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(
-                            username, data.getPassword())
-            );
-            User user = this.userRepository.findByEmail(username).orElse(null);
-            if (user == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-            }
-            String token = jwtUtil.createToken(user);
-            Map<Object, Object> model = new HashMap<>();
-            model.put("username", username);
-            model.put("token", token);
-            return ResponseEntity.ok(model);
-        } catch (BadCredentialsException e) {
+    public ResponseEntity login(@Valid @RequestBody LoginDTO data) {
+        String username = data.getEmail();
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        username, data.getPassword())
+        );
+        User user = this.userRepository.findByEmail(username).orElse(null);
+        if (user == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
+        String token = jwtUtil.createToken(user);
+        Map<Object, Object> model = new HashMap<>();
+        model.put("username", username);
+        model.put("token", token);
+        return ResponseEntity.ok(model);
     }
 
     @ApiOperation(value = "Signup using credentials", notes = "Returns a successful message")

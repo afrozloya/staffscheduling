@@ -1,5 +1,6 @@
 package com.invygo.staffscheduling.repository;
 
+import com.invygo.staffscheduling.dto.DateRangeDTO;
 import com.invygo.staffscheduling.dto.TotalShiftLengthRespDTO;
 import com.invygo.staffscheduling.models.Schedule;
 import com.invygo.staffscheduling.models.User;
@@ -27,9 +28,9 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
     }
 
     @Override
-    public Iterable<TotalShiftLengthRespDTO> getTotalShiftLengthByUser(boolean isDescending, Date startDate,
-                                                                       Date endDate) {
-        Criteria workDateCriteria = workDateCriteria = getWorkCriteria(startDate, endDate);
+    public Iterable<TotalShiftLengthRespDTO> getTotalShiftLengthByUser(boolean isDescending,
+                                                                       DateRangeDTO dateRangeDTO) {
+        Criteria workDateCriteria = workDateCriteria = getWorkCriteria(dateRangeDTO);
         MatchOperation matchOperation = Aggregation.match(workDateCriteria);
         GroupOperation groupOperation = Aggregation.group("user")
                 .last("user").as("user")
@@ -46,23 +47,27 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
     }
 
     @Override
-    public Iterable<Schedule> findAllByUserForDateRange(User user, Date startDate, Date endDate) {
+    public Iterable<Schedule> findAllByUserForDateRange(User user, DateRangeDTO dateRangeDTO) {
         Query query = new Query();
         query.addCriteria(Criteria.where("user").is(user));
-        Criteria workDateCriteria = workDateCriteria = getWorkCriteria(startDate, endDate);
+        Criteria workDateCriteria = workDateCriteria = getWorkCriteria(dateRangeDTO);
         if(workDateCriteria!=null)
             query.addCriteria(workDateCriteria);
         Iterable<Schedule> schedules = mongoTemplate.find(query,Schedule.class);
         return schedules;
     }
 
-    private Criteria getWorkCriteria(Date startDate, Date endDate) {
+    private Criteria getWorkCriteria(DateRangeDTO dateRangeDTO) {
         Criteria workDateCriteria = null;
+        Date startDate = dateRangeDTO != null ? dateRangeDTO.getStartDate() : null;
+        Date endDate = dateRangeDTO != null ? dateRangeDTO.getEndDate() : null;
+
         LocalDate today = LocalDate.now();
         LocalDate lastYear = today.minusYears(1);
         if(startDate ==null || lastYear.isAfter(convertToLocalDate(startDate))){
             startDate = convertToUtilDate(lastYear);
         }
+
         if(startDate != null || endDate != null){
             workDateCriteria = Criteria.where("workDate");
             if(startDate !=null)
@@ -70,6 +75,7 @@ public class ScheduleCustomRepositoryImpl implements ScheduleCustomRepository {
             if(endDate !=null)
                 workDateCriteria = workDateCriteria.lte(endDate);
         }
+
         return workDateCriteria;
     }
 
