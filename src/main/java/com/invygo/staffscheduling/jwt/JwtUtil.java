@@ -8,6 +8,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ public class JwtUtil {
     @Value("${security.jwt.token.expire-length:3600}")
     private long EXPIRE_DURATION = 3600;
 
+    @Setter
     @Value("${security.jwt.token.secret-key:secret}")
     private String SECRET_KEY;
 
